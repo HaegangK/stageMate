@@ -6,6 +6,7 @@
     "@emotion/react": "^11.14.0",
     "@emotion/style": "^0.8.0",
     "@emotion/styled": "^11.14.0",
+    "@metamask/sdk": "^0.32.1",
     "@mui/icons-material": "^7.0.0",
     "@mui/material": "^7.0.0",
     "@testing-library/dom": "^10.4.0",
@@ -22,7 +23,8 @@
     "react-router-dom": "^7.4.0",
     "react-scripts": "5.0.1",
     "typescript": "^4.9.5",
-    "web-vitals": "^2.1.4"
+    "web-vitals": "^2.1.4",
+    "web3": "^4.16.0"
   },
   "scripts": {
     "start": "react-scripts start",

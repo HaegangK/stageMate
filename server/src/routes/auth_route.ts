@@ -6,8 +6,13 @@ import {
     googleLoginController,
     checkAdminController,
     logoutController,
+    requestNonceController,
+    verifySignatureController,
+    checkAuthController
 } from '../controllers/authController';
 import authByToken from '../middlewares/authByToken';
+import * as authService from '../services/authService';
+import { RequestHandler } from 'express';
 
 const router = Router();
 
@@ -23,15 +28,17 @@ router.get('/google', googleLoginController);
 // 소셜 로그인 콜백
 router.get('/:provider/callback', socialLoginController);
 
-// 관리자 권한 체크
-router.get('/check-admin', authByToken, checkAdminController);
+// 관리자 권한 확인
+router.get('/admin', authByToken, checkAdminController);
 
 // 로그아웃
 router.post('/logout', logoutController);
 
-// 인증 상태 확인
-router.get('/check', authByToken, (req, res) => {
-  res.status(200).json({ isAuthenticated: true });
-});
+// 인증 상태 확인 (사용자 정보 반환)
+router.get('/check', authByToken, checkAuthController);
+
+// Metamask 로그인 관련 라우트
+router.post('/nonce', requestNonceController);
+router.post('/verify', verifySignatureController);
 
 export default router;

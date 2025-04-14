@@ -1,5 +1,5 @@
 import { Request, Response, NextFunction } from 'express';
-import { kakaoLogin, naverLogin, googleLogin } from '../services/authService';
+import * as authService from '../services/authService';
 import { createError } from '../utils/error';
 import pool from '../config/dataBase';
 
@@ -34,14 +34,14 @@ export const socialLoginController = async (
 
         let result;
         if (provider === 'kakao') {
-            result = await kakaoLogin(code);
+            result = await authService.kakaoLogin(code);
         } else if (provider === 'naver') {
             if (!state || state !== process.env.NAVER_STATE) {
                 throw createError('ValidationError', '유효하지 않은 상태입니다.', 400);
             }
-            result = await naverLogin(code, state);
+            result = await authService.naverLogin(code, state);
         } else if (provider === 'google') {
-            result = await googleLogin(code);
+            result = await authService.googleLogin(code);
         } else {
             throw createError('ValidationError', '지원하지 않는 소셜 로그인입니다.', 400);
         }
@@ -89,6 +89,72 @@ export const checkAdminController = async (req: Request, res: Response, next: Ne
 
         const isAdmin = result.rows[0].is_admin;
         res.status(200).json({ isAdmin });
+    } catch (error) {
+        next(error);
+    }
+};
+
+export const requestNonceController = async (req: Request, res: Response, next: NextFunction) => {
+    try {
+        const { walletAddress } = req.body;
+        
+        if (!walletAddress) {
+            throw createError('BadRequest', '지갑 주소가 필요합니다.', 400);
+        }
+
+        // 지갑 주소가 이미 다른 사용자에 의해 사용 중인지 확인
+        const checkWalletQuery = 'SELECT * FROM users WHERE wallet_address = $1';
+        const walletResult = await pool.query(checkWalletQuery, [walletAddress]);
+        
+        if (walletResult.rows.length > 0) {
+            throw createError('Conflict', '이미 사용 중인 지갑 주소입니다.', 409);
+        }
+        
+        const nonce = await authService.generateNonce(walletAddress);
+        res.status(200).json({ nonce });
+    } catch (error) {
+        next(error);
+    }
+};
+
+export const verifySignatureController = async (req: Request, res: Response, next: NextFunction) => {
+    try {
+        const { walletAddress, signature } = req.body;
+        
+        if (!walletAddress || !signature) {
+            throw createError('BadRequest', '지갑 주소와 서명이 필요합니다.', 400);
+        }
+
+        // 지갑 주소가 이미 다른 사용자에 의해 사용 중인지 확인
+        const checkWalletQuery = 'SELECT * FROM users WHERE wallet_address = $1';
+        const walletResult = await pool.query(checkWalletQuery, [walletAddress]);
+        
+        if (walletResult.rows.length > 0) {
+            throw createError('Conflict', '이미 사용 중인 지갑 주소입니다.', 409);
+        }
+
+        // 서명 검증
+        const isValid = await authService.verifySignature(walletAddress, signature);
+        if (!isValid) {
+            throw createError('Unauthorized', '잘못된 서명입니다.', 401);
+        }
+
+        res.status(200).json({ 
+            message: '서명이 확인되었습니다.'
+        });
+    } catch (error) {
+        next(error);
+    }
+};
+
+export const checkAuthController = async (req: Request, res: Response, next: NextFunction) => {
+    try {
+        const userId = req.user?.id;
+        if (!userId) {
+            throw createError('Unauthorized', '인증되지 않은 사용자입니다.', 401);
+        }
+        const userInfo = await authService.getUserInfo(userId);
+        res.status(200).json(userInfo);
     } catch (error) {
         next(error);
     }

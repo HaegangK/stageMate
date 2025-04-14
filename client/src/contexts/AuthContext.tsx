@@ -1,11 +1,13 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
 import { authAPI } from '../services/api';
+import { useMetaMask } from './MetaMaskContext';
 
 interface User {
   id: number;
-  email: string;
+  email: string | null;
   username: string;
   profile_image: string | null;
+  wallet_address?: string | null;
   kakaoid?: string;
   naverid?: string;
   googleid?: string;
@@ -36,6 +38,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const [isAdmin, setIsAdmin] = useState(false);
   const [user, setUser] = useState<User | null>(null);
   const [loading, setLoading] = useState(true);
+  const { disconnectWallet } = useMetaMask();
 
   const checkAuth = async () => {
     try {
@@ -71,6 +74,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       setIsAdmin(false);
       setUser(null);
       localStorage.removeItem('token');
+      disconnectWallet();
     } catch (error) {
       console.error('로그아웃 에러:', error);
     }

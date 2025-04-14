@@ -10,6 +10,7 @@ import { errorHandler, notFoundHandler } from './middlewares/errorHandler';
 
 import authRouter from './routes/auth_route';
 import postRouter from './routes/post_route';
+import mypageRouter from './routes/mypage_route';
 
 const app = express();
 
@@ -29,6 +30,7 @@ app.use(express.static(path.join(__dirname, 'public')));
 // 라우트 등록
 app.use('/api/posts', postRouter);
 app.use('/api/auth', authRouter);
+app.use('/api/mypage', mypageRouter);
 
 // 404 처리
 app.use(notFoundHandler);

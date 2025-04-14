@@ -1,5 +1,5 @@
 import React from 'react';
-import { Box, Button, Container, Typography, Paper } from '@mui/material';
+import { Box, Button, Container, Typography, Paper, Alert } from '@mui/material';
 import { authAPI } from '../services/api';
 
 const LoginPage: React.FC = () => {
@@ -28,7 +28,7 @@ const LoginPage: React.FC = () => {
           }}
         >
           <Typography component="h1" variant="h5" sx={{ mb: 3 }}>
-            관리자 로그인
+            로그인
           </Typography>
           <Button
             variant="contained"
@@ -52,6 +52,7 @@ const LoginPage: React.FC = () => {
             variant="contained"
             color="success"
             fullWidth
+            sx={{ mb: 3 }}
             onClick={() => handleLogin('naver')}
           >
             네이버로 로그인

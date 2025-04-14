@@ -8,7 +8,9 @@ import PostListPage from './pages/PostListPage';
 import PostDetailPage from './pages/PostDetailPage';
 import MyPage from './pages/MyPage';
 import { AuthProvider } from './contexts/AuthContext';
+import { MetaMaskProvider } from './contexts/MetaMaskContext';
 import Header from './components/Header';
+import ProtectedRoute from './components/ProtectedRoute';
 
 const theme = createTheme({
   palette: {
@@ -52,22 +54,26 @@ const theme = createTheme({
 
 const App: React.FC = () => {
   return (
-    <AuthProvider>
-      <ThemeProvider theme={theme}>
-        <CssBaseline />
-        <Router>
-          <Header />
-          <Routes>
-            <Route path="/login" element={<LoginPage />} />
-            <Route path="/posts" element={<PostListPage />} />
-            <Route path="/posts/create" element={<CreatePostPage />} />
-            <Route path="/posts/:postId" element={<PostDetailPage />} />
-            <Route path="/mypage" element={<MyPage />} />
-            <Route path="/" element={<Navigate to="/posts" replace />} />
-          </Routes>
-        </Router>
-      </ThemeProvider>
-    </AuthProvider>
+    <MetaMaskProvider>
+      <AuthProvider>
+        <ThemeProvider theme={theme}>
+          <CssBaseline />
+          <Router>
+            <Header />
+            <Routes>
+              <Route path="/login" element={<LoginPage />} />
+              <Route path="/posts" element={<PostListPage />} />
+              <Route path="/posts/create" element={<CreatePostPage />} />
+              <Route path="/posts/:postId" element={<PostDetailPage />} />
+              <Route element={<ProtectedRoute />}>
+                <Route path="/mypage" element={<MyPage />} />
+              </Route>
+              <Route path="/" element={<Navigate to="/posts" replace />} />
+            </Routes>
+          </Router>
+        </ThemeProvider>
+      </AuthProvider>
+    </MetaMaskProvider>
   );
 };
 
